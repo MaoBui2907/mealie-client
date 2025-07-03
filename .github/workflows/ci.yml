@@ -1,0 +1,238 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    name: Test Python ${{ matrix.python-version }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
+      fail-fast: false
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install PDM
+      uses: pdm-project/setup-pdm@v3
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        pdm install -G test
+
+    - name: Run unit tests
+      run: |
+        pdm run test-unit
+
+    - name: Upload coverage to Codecov
+      if: matrix.python-version == '3.11' && matrix.os == 'ubuntu-latest'
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+
+  lint:
+    name: Lint and Format Check
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install PDM
+      uses: pdm-project/setup-pdm@v3
+
+    - name: Install dependencies
+      run: |
+        pdm install -G dev
+
+    - name: Run ruff linting
+      run: |
+        pdm run lint
+
+    - name: Check code formatting
+      run: |
+        pdm run ruff format --check src/ tests/
+
+    - name: Run type checking
+      run: |
+        pdm run type-check
+
+  security:
+    name: Security Check
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install PDM
+      uses: pdm-project/setup-pdm@v3
+
+    - name: Install dependencies
+      run: |
+        pdm install -G dev
+
+    - name: Run bandit security linter
+      run: |
+        pdm add bandit[toml]
+        pdm run bandit -r src/ -f json -o bandit-report.json
+
+    - name: Upload bandit report
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: bandit-report
+        path: bandit-report.json
+
+  build:
+    name: Build Package
+    runs-on: ubuntu-latest
+    needs: [test, lint]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install PDM
+      uses: pdm-project/setup-pdm@v3
+
+    - name: Install dependencies
+      run: |
+        pdm install
+
+    - name: Build package
+      run: |
+        pdm build
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: dist
+        path: dist/
+
+    - name: Test package installation
+      run: |
+        pip install dist/*.whl
+        python -c "import mealie_sdk; print(f'Successfully imported mealie_sdk v{mealie_sdk.__version__}')"
+
+  integration-test:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: [test, lint]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    services:
+      mealie:
+        image: ghcr.io/mealie-recipes/mealie:latest
+        env:
+          ALLOW_SIGNUP: true
+          PUID: 1000
+          PGID: 1000
+          TZ: America/Anchorage
+          MAX_WORKERS: 1
+          WEB_CONCURRENCY: 1
+          BASE_URL: http://localhost:9925
+        ports:
+          - 9925:9000
+        options: >-
+          --health-cmd "curl -f http://localhost:9000/api/app/about || exit 1"
+          --health-interval 30s
+          --health-timeout 10s
+          --health-retries 5
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install PDM
+      uses: pdm-project/setup-pdm@v3
+
+    - name: Install dependencies
+      run: |
+        pdm install -G test
+
+    - name: Wait for Mealie to be ready
+      run: |
+        timeout 300 bash -c 'until curl -f http://localhost:9925/api/app/about; do sleep 5; done'
+
+    - name: Create test user and get API token
+      run: |
+        # Create a test user and get API token
+        echo "MEALIE_BASE_URL=http://localhost:9925" >> $GITHUB_ENV
+        echo "Creating test user..."
+        # Note: This would need actual API calls to create user and get token
+        # For now, we'll skip the actual integration tests
+        echo "Integration tests would run here with real Mealie instance"
+
+    - name: Run integration tests
+      run: |
+        # pdm run test-integration
+        echo "Integration tests are configured but skipped in this example"
+        echo "To enable, implement user creation and token retrieval from Mealie API"
+
+  docs:
+    name: Build Documentation
+    runs-on: ubuntu-latest
+    needs: [lint]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install PDM
+      uses: pdm-project/setup-pdm@v3
+
+    - name: Install dependencies
+      run: |
+        pdm install -G docs
+
+    - name: Build documentation
+      run: |
+        pdm run docs-build
+
+    - name: Upload documentation
+      uses: actions/upload-artifact@v3
+      with:
+        name: documentation
+        path: site/ 

@@ -1,0 +1,15 @@
+[project]
+name = "mealie-sdk"
+version = "0.1.0"
+description = "Default template for PDM package"
+authors = [
+    {name = "Mao Bui", email = "maonguyen199873@gmail.com"},
+]
+dependencies = ["httpx>=0.28.1", "pydantic>=2.11.7"]
+requires-python = "==3.11.*"
+readme = "README.md"
+license = {text = "MIT"}
+
+
+[tool.pdm]
+distribution = false
