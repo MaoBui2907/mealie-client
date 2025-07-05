@@ -5,7 +5,7 @@ This module provides specialized fixtures for integration testing,
 including HTTP mocking scenarios and complex test data.
 """
 
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 import pytest
 import respx
@@ -46,7 +46,7 @@ def mock_server_responses():
             "name": "Test Recipe",
             "slug": "test-recipe",
             "description": "A test recipe",
-            "created_at": datetime.utcnow().isoformat()
+            "created_at": datetime.now(UTC).isoformat()
         }
     }
 
@@ -173,7 +173,7 @@ def mock_pagination_response():
             {
                 "id": f"item_{i}",
                 "name": f"Test Item {i}",
-                "created_at": datetime.utcnow().isoformat()
+                "created_at": datetime.now(UTC).isoformat()
             }
             for i in range(1, 11)  # 10 items for first page
         ]
@@ -197,7 +197,7 @@ def complex_workflow_data():
             "cook_time": "PT45M"
         },
         "meal_plan_data": {
-            "date": datetime.utcnow().date().isoformat(),
+            "date": datetime.now(UTC).date().isoformat(),
             "entry_type": "dinner",
             "title": "Test Meal Plan Entry"
         },
@@ -234,8 +234,8 @@ async def retry_test_mock():
 @pytest.fixture
 def auth_token_scenarios():
     """Different authentication token scenarios for testing."""
-    expired_time = datetime.utcnow() - timedelta(hours=1)
-    valid_time = datetime.utcnow() + timedelta(hours=1)
+    expired_time = datetime.now(UTC) - timedelta(hours=1)
+    valid_time = datetime.now(UTC) + timedelta(hours=1)
     
     return {
         "valid_token": {

@@ -5,9 +5,8 @@ This module provides common fixtures for HTTP mocking, test data factories,
 and other utilities used across unit and integration tests.
 """
 
-import os
-from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
+from datetime import UTC, datetime, timedelta
+from typing import Any, Dict, Optional
 from unittest.mock import AsyncMock, Mock
 from uuid import uuid4
 
@@ -17,14 +16,8 @@ import respx
 
 from mealie_client import MealieClient, MealieAuth
 from mealie_client.models import (
-    Recipe, RecipeCreateRequest, RecipeSummary,
-    User, UserCreateRequest, UserSummary,
-    Group, GroupSummary,
-    MealPlan, ShoppingList,
-    UserRole, RecipeVisibility,
-    Unit, UnitCreateRequest, UnitSummary,
-    Food, FoodCreateRequest, FoodSummary,
-    Household, HouseholdSummary
+    Recipe, RecipeCreateRequest,
+    User, UserCreateRequest,
 )
 
 
@@ -88,7 +81,7 @@ def auth_token_response() -> Dict[str, Any]:
         "refresh_token": "mock_refresh_token_67890", 
         "token_type": "bearer",
         "expires_in": 3600,
-        "expires_at": (datetime.utcnow() + timedelta(hours=1)).isoformat()
+        "expires_at": (datetime.now(UTC) + timedelta(hours=1)).isoformat()
     }
 
 
@@ -147,7 +140,7 @@ def create_test_user_data(**kwargs) -> Dict[str, Any]:
         "can_organize": False,
         "login_attemps": 0,
         "locked_at": None,
-        "date_updated": datetime.utcnow().isoformat(),
+        "date_updated": datetime.now(UTC).isoformat(),
         "cache_key": str(uuid4())
     }
     defaults.update(kwargs)
@@ -210,8 +203,8 @@ def create_test_recipe_data(**kwargs) -> Dict[str, Any]:
         "tags": [{"name": "Easy", "slug": "easy"}],
         "tools": [{"name": "Mixing Bowl", "slug": "mixing-bowl"}],
         "rating": 4.5,
-        "date_added": datetime.utcnow().isoformat(),
-        "date_updated": datetime.utcnow().isoformat()
+        "date_added": datetime.now(UTC).isoformat(),
+        "date_updated": datetime.now(UTC).isoformat()
     }
     defaults.update(kwargs)
     return defaults
@@ -259,8 +252,8 @@ def create_test_shopping_list_data(**kwargs) -> Dict[str, Any]:
         "group_id": TEST_GROUP_ID,
         "user_id": TEST_USER_ID,
         "name": f"Test Shopping List {uuid4().hex[:8]}",
-        "created_at": datetime.utcnow().isoformat(),
-        "updated_at": datetime.utcnow().isoformat(),
+        "created_at": datetime.now(UTC).isoformat(),
+        "updated_at": datetime.now(UTC).isoformat(),
         "list_items": []
     }
     defaults.update(kwargs)
@@ -273,8 +266,8 @@ def create_test_meal_plan_data(**kwargs) -> Dict[str, Any]:
         "id": str(uuid4()),
         "group_id": TEST_GROUP_ID,
         "user_id": TEST_USER_ID,
-        "start_date": datetime.utcnow().date().isoformat(),
-        "end_date": (datetime.utcnow().date() + timedelta(days=6)).isoformat(),
+        "start_date": datetime.now(UTC).date().isoformat(),
+        "end_date": (datetime.now(UTC).date() + timedelta(days=6)).isoformat(),
         "plan_rules": [],
         "shopping_list": None
     }

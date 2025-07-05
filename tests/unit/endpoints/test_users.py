@@ -5,7 +5,8 @@ Tests cover user-related operations including CRUD operations,
 user management, and authentication flows.
 """
 
-from unittest.mock import AsyncMock, Mock
+from datetime import UTC
+from unittest.mock import AsyncMock
 from uuid import uuid4
 
 import pytest
@@ -558,7 +559,7 @@ def create_test_user_data(**kwargs):
         "can_organize": False,
         "login_attemps": 0,
         "locked_at": None,
-        "date_updated": datetime.utcnow().isoformat(),
+        "date_updated": datetime.now(UTC).isoformat(),
         "cache_key": str(uuid4())
     }
     defaults.update(kwargs)

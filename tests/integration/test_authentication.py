@@ -6,7 +6,7 @@ and authentication error scenarios.
 """
 
 import asyncio
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 import pytest
 import httpx
@@ -142,8 +142,6 @@ class TestTokenManagement:
     @pytest.mark.integration
     async def test_token_storage_and_retrieval(self, integration_httpx_mock, base_url, test_credentials):
         """Test that tokens are properly stored and retrieved."""
-        expires_at = datetime.utcnow() + timedelta(hours=1)
-        
         integration_httpx_mock.post("/api/auth/token").mock(
             return_value=httpx.Response(200, json={
                 "access_token": "stored_token",
@@ -185,7 +183,7 @@ class TestTokenManagement:
         
         # Manually set expired token
         client.auth._access_token = "expired_token"
-        client.auth._token_expires_at = datetime.utcnow() - timedelta(hours=1)
+        client.auth._token_expires_at = datetime.now(UTC) - timedelta(hours=1)
         
         assert client.auth.needs_refresh is True
         
@@ -218,7 +216,7 @@ class TestTokenManagement:
         await client.start_session()
         
         # Force token to need refresh
-        client.auth._token_expires_at = datetime.utcnow() + timedelta(minutes=2)  # Within buffer
+        client.auth._token_expires_at = datetime.now(UTC) + timedelta(minutes=2)  # Within buffer
         
         # Request should trigger refresh
         await client.auth.get_auth_headers()
@@ -264,7 +262,7 @@ class TestTokenManagement:
         await client.start_session()
         
         # Force refresh needed
-        client.auth._token_expires_at = datetime.utcnow() - timedelta(minutes=1)
+        client.auth._token_expires_at = datetime.now(UTC) - timedelta(minutes=1)
         
         # Make concurrent requests
         tasks = [

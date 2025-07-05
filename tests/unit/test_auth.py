@@ -5,17 +5,14 @@ Tests cover MealieAuth class initialization, token management,
 authentication flows, and environment variable configuration.
 """
 
-import os
-from datetime import datetime, timedelta
-from unittest.mock import AsyncMock, Mock, patch
+from datetime import UTC, datetime, timedelta
+from unittest.mock import AsyncMock, Mock
 
 import pytest
-import httpx
 
 from mealie_client.auth import MealieAuth, AuthenticationManager, create_auth_from_env
 from mealie_client.exceptions import (
     AuthenticationError,
-    AuthorizationError, 
     ConfigurationError
 )
 
@@ -219,7 +216,7 @@ class TestMealieAuth:
     def test_needs_refresh_true_when_token_near_expiry(self, mealie_auth):
         """Test that needs_refresh returns True when token is near expiry."""
         # Set token to expire in 2 minutes (less than buffer of 5 minutes)
-        near_expiry = datetime.utcnow() + timedelta(minutes=2)
+        near_expiry = datetime.now(UTC) + timedelta(minutes=2)
         mealie_auth._token_expires_at = near_expiry
         
         assert mealie_auth.needs_refresh is True
@@ -228,7 +225,7 @@ class TestMealieAuth:
     def test_needs_refresh_false_when_token_not_near_expiry(self, mealie_auth):
         """Test that needs_refresh returns False when token is not near expiry."""
         # Set token to expire in 10 minutes (more than buffer of 5 minutes)
-        future_expiry = datetime.utcnow() + timedelta(minutes=10)
+        future_expiry = datetime.now(UTC) + timedelta(minutes=10)
         mealie_auth._token_expires_at = future_expiry
         
         assert mealie_auth.needs_refresh is False
@@ -244,7 +241,7 @@ class TestMealieAuth:
         # Set up existing tokens
         mealie_auth._access_token = "test_token"
         mealie_auth._refresh_token = "test_refresh"
-        mealie_auth._token_expires_at = datetime.utcnow() + timedelta(hours=1)
+        mealie_auth._token_expires_at = datetime.now(UTC) + timedelta(hours=1)
         
         # Mock HTTP client
         mock_client = AsyncMock()

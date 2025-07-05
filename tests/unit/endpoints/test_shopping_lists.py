@@ -6,7 +6,7 @@ Tests cover shopping list operations including CRUD operations.
 
 from unittest.mock import AsyncMock
 from uuid import uuid4
-from datetime import datetime
+from datetime import UTC, datetime
 
 import pytest
 
@@ -138,18 +138,6 @@ class TestShoppingListsManager:
         shopping_lists_manager.client.delete.assert_called_once_with("households/shopping/lists/list-123/items/item-456")
         assert result is True
 
-    @pytest.mark.unit
-    async def test_clear_checked_items(self, shopping_lists_manager):
-        """Test clearing all checked items from shopping list."""
-        response_data = create_test_shopping_list_data()
-        shopping_lists_manager.client.delete = AsyncMock(return_value=response_data)
-        
-        result = await shopping_lists_manager.clear_checked_items("list-123")
-        
-        shopping_lists_manager.client.delete.assert_called_once_with("households/shopping/lists/list-123/items/checked")
-        assert isinstance(result, ShoppingList)
-
-
 def create_test_shopping_list_data(**kwargs):
     """Create test shopping list data."""
     defaults = {
@@ -157,8 +145,8 @@ def create_test_shopping_list_data(**kwargs):
         "group_id": "test-group",
         "user_id": "test-user",
         "name": f"Test Shopping List {uuid4().hex[:8]}",
-        "created_at": datetime.utcnow().isoformat(),
-        "updated_at": datetime.utcnow().isoformat(),
+        "created_at": datetime.now(UTC).isoformat(),
+        "updated_at": datetime.now(UTC).isoformat(),
         "list_items": [
             {
                 "id": str(uuid4()),

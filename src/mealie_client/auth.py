@@ -6,7 +6,7 @@ token management, and automatic token refresh.
 """
 
 import asyncio
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any, Dict, List, Optional, Union
 
 from .exceptions import AuthenticationError, AuthorizationError, ConfigurationError
@@ -110,7 +110,7 @@ class MealieAuth:
             return False
 
         buffer_time = timedelta(minutes=self.token_buffer_minutes)
-        return datetime.utcnow() + buffer_time >= self._token_expires_at
+        return datetime.now(UTC) + buffer_time >= self._token_expires_at
 
     async def get_auth_headers(self) -> Dict[str, str]:
         """
@@ -291,10 +291,10 @@ class MealieAuth:
         # Calculate token expiry
         expires_in = token_data.get("expires_in")
         if expires_in:
-            self._token_expires_at = datetime.utcnow() + timedelta(seconds=expires_in)
+            self._token_expires_at = datetime.now(UTC) + timedelta(seconds=expires_in)
         else:
             # Default to 1 hour if not specified
-            self._token_expires_at = datetime.utcnow() + timedelta(hours=1)
+            self._token_expires_at = datetime.now(UTC) + timedelta(hours=1)
 
     def _clear_tokens(self) -> None:
         """Clear all stored tokens."""

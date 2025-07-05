@@ -5,8 +5,8 @@ Provides utilities for generating test data for E2E tests.
 
 import time
 import uuid
-from datetime import datetime, date, timedelta
-from typing import Dict, Any, List, Optional
+from datetime import UTC, datetime, date, timedelta
+from typing import Any, Dict, Optional
 
 from tests.e2e.config import get_test_config
 
@@ -128,7 +128,7 @@ class E2EDataFactory:
             "date": plan_date.isoformat(),
             "entry_type": "breakfast",
             "title": f"{config.test_prefix}meal_plan_{E2EDataFactory.generate_unique_id()}",
-            "text": f"E2E test meal plan created at {datetime.utcnow().isoformat()}",
+            "text": f"E2E test meal plan created at {datetime.now(UTC).isoformat()}",
         }
 
         base_data.update(overrides)
@@ -162,7 +162,7 @@ class E2EDataFactory:
             "name": f"{config.test_prefix}shopping_list_{suffix}",
             "extras": {
                 "created_by_test": True,
-                "test_timestamp": datetime.utcnow().isoformat(),
+                "test_timestamp": datetime.now(UTC).isoformat(),
             },
         }
 
@@ -203,7 +203,7 @@ class E2EDataFactory:
             "checked": False,
             "extras": {
                 "created_by_test": True,
-                "test_timestamp": datetime.utcnow().isoformat(),
+                "test_timestamp": datetime.now(UTC).isoformat(),
             },
         }
 
@@ -225,10 +225,10 @@ class E2EDataFactory:
         base_data = {
             "name": f"{config.test_prefix}food_{unique_suffix}",
             "pluralName": f"{config.test_prefix}foods_{unique_suffix}",
-            "description": f"E2E test food created at {datetime.utcnow().isoformat()}",
+            "description": f"E2E test food created at {datetime.now(UTC).isoformat()}",
             "extras": {
                 "created_by_test": True,
-                "test_timestamp": datetime.utcnow().isoformat(),
+                "test_timestamp": datetime.now(UTC).isoformat(),
             },
             "aliases": [
                 {"name": f"test_alias_{unique_suffix}"}
@@ -253,14 +253,14 @@ class E2EDataFactory:
         base_data = {
             "name": f"{config.test_prefix}unit_{unique_suffix}",
             "pluralName": f"{config.test_prefix}units_{unique_suffix}",
-            "description": f"E2E test unit created at {datetime.utcnow().isoformat()}",
+            "description": f"E2E test unit created at {datetime.now(UTC).isoformat()}",
             "abbreviation": f"tu{unique_suffix[:3]}",
             "pluralAbbreviation": f"tus{unique_suffix[:3]}",
             "fraction": False,
             "useAbbreviation": False,
             "extras": {
                 "created_by_test": True,
-                "test_timestamp": datetime.utcnow().isoformat(),
+                "test_timestamp": datetime.now(UTC).isoformat(),
             },
             "aliases": [
                 {"name": f"test_unit_alias_{unique_suffix}"}

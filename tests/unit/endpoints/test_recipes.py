@@ -5,10 +5,8 @@ Tests cover all recipe-related operations including CRUD operations,
 searching, filtering, image management, and advanced features.
 """
 
-from unittest.mock import AsyncMock, Mock, patch
-from pathlib import Path
-import tempfile
-import os
+from datetime import UTC
+from unittest.mock import AsyncMock
 
 import pytest
 
@@ -470,8 +468,8 @@ def create_test_recipe_data(**kwargs):
         "tags": [],
         "tools": [],
         "rating": 4.5,
-        "date_added": datetime.utcnow().isoformat(),
-        "date_updated": datetime.utcnow().isoformat()
+        "date_added": datetime.now(UTC).isoformat(),
+        "date_updated": datetime.now(UTC).isoformat()
     }
     defaults.update(kwargs)
     return defaults 

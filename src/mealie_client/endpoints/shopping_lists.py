@@ -3,7 +3,6 @@ Shopping lists endpoint manager for the Mealie SDK.
 """
 
 from typing import Any, Dict, List, Union
-import warnings
 
 from ..models.shopping_list import (
     ShoppingList,
@@ -104,19 +103,7 @@ class ShoppingListsManager:
         list_id: str,
         item_data: Union[ShoppingListItemCreateRequest, Dict[str, Any]],
     ) -> ShoppingList:
-        """
-        DEPRECATED: Add an item to a shopping list.
-        
-        This method is deprecated as the Mealie API doesn't support direct item operations.
-        Use add_recipe_ingredients() instead.
-        """
-        warnings.warn(
-            "add_item() is deprecated. The Mealie API doesn't support direct item operations. "
-            "Use add_recipe_ingredients() instead.",
-            DeprecationWarning,
-            stacklevel=2
-        )
-        
+        """Add an item to a shopping list."""
         if isinstance(item_data, ShoppingListItemCreateRequest):
             data = item_data.to_dict()
         else:
@@ -131,17 +118,7 @@ class ShoppingListsManager:
         item_id: str,
         item_data: Union[ShoppingListItemUpdateRequest, Dict[str, Any]],
     ) -> ShoppingList:
-        """
-        DEPRECATED: Update a shopping list item.
-        
-        This method is deprecated as the Mealie API doesn't support direct item operations.
-        """
-        warnings.warn(
-            "update_item() is deprecated. The Mealie API doesn't support direct item operations.",
-            DeprecationWarning,
-            stacklevel=2
-        )
-        
+        """Update a shopping list item."""
         if isinstance(item_data, ShoppingListItemUpdateRequest):
             data = item_data.to_dict()
         else:
@@ -154,111 +131,6 @@ class ShoppingListsManager:
         return ShoppingList.from_dict(response) if isinstance(response, dict) else response
 
     async def delete_item(self, list_id: str, item_id: str) -> bool:
-        """
-        DEPRECATED: Delete an item from a shopping list.
-        
-        This method is deprecated as the Mealie API doesn't support direct item operations.
-        """
-        warnings.warn(
-            "delete_item() is deprecated. The Mealie API doesn't support direct item operations.",
-            DeprecationWarning,
-            stacklevel=2
-        )
-        
+        """Delete a shopping list item."""
         await self.client.delete(f"households/shopping/lists/{list_id}/items/{item_id}")
         return True
-
-    async def add_recipe_ingredients(
-        self,
-        list_id: str,
-        recipe_data: List[Dict[str, Any]],
-    ) -> ShoppingList:
-        """
-        Add recipe ingredients to a shopping list.
-        
-        Args:
-            list_id: Shopping list ID
-            recipe_data: List of recipe ingredient data following API schema
-            
-        Returns:
-            Updated shopping list
-        """
-        response = await self.client.post(f"households/shopping/lists/{list_id}/recipe", json_data=recipe_data)
-        return ShoppingList.from_dict(response) if isinstance(response, dict) else response
-
-    async def add_single_recipe_ingredients(
-        self,
-        list_id: str,
-        recipe_id: str,
-    ) -> ShoppingList:
-        """
-        Add single recipe ingredients to a shopping list.
-        
-        Args:
-            list_id: Shopping list ID
-            recipe_id: Recipe ID to add ingredients from
-            
-        Returns:
-            Updated shopping list
-        """
-        response = await self.client.post(f"households/shopping/lists/{list_id}/recipe/{recipe_id}")
-        return ShoppingList.from_dict(response) if isinstance(response, dict) else response
-
-    async def remove_recipe_ingredients(
-        self,
-        list_id: str,
-        recipe_id: str,
-        decrement_data: Dict[str, Any],
-    ) -> ShoppingList:
-        """
-        Remove recipe ingredients from a shopping list.
-        
-        Args:
-            list_id: Shopping list ID
-            recipe_id: Recipe ID to remove ingredients from
-            decrement_data: Data with recipeDecrementQuantity
-            
-        Returns:
-            Updated shopping list
-        """
-        response = await self.client.post(
-            f"households/shopping/lists/{list_id}/recipe/{recipe_id}/delete",
-            json_data=decrement_data
-        )
-        return ShoppingList.from_dict(response) if isinstance(response, dict) else response
-
-    async def update_label_settings(
-        self,
-        list_id: str,
-        label_settings: List[Dict[str, Any]],
-    ) -> ShoppingList:
-        """
-        Update label settings for a shopping list.
-        
-        Args:
-            list_id: Shopping list ID
-            label_settings: List of label setting objects
-            
-        Returns:
-            Updated shopping list
-        """
-        response = await self.client.put(
-            f"households/shopping/lists/{list_id}/label-settings",
-            json_data=label_settings
-        )
-        return ShoppingList.from_dict(response) if isinstance(response, dict) else response
-
-    async def clear_checked_items(self, list_id: str) -> ShoppingList:
-        """
-        DEPRECATED: Clear all checked items from a shopping list.
-        
-        This method is deprecated as the Mealie API doesn't support direct item operations.
-        """
-        warnings.warn(
-            "clear_checked_items() is deprecated. The Mealie API doesn't support direct item operations.",
-            DeprecationWarning,
-            stacklevel=2
-        )
-        
-        response = await self.client.delete(f"households/shopping/lists/{list_id}/items/checked")
-        return ShoppingList.from_dict(response) if isinstance(response, dict) else response 

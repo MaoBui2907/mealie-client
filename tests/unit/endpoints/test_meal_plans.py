@@ -6,12 +6,12 @@ Tests cover meal plan operations including CRUD operations.
 
 from unittest.mock import AsyncMock
 from uuid import uuid4
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 import pytest
 
 from mealie_client.endpoints.meal_plans import MealPlansManager
-from mealie_client.models.meal_plan import MealPlan, MealPlanCreateRequest, MealPlanUpdateRequest
+from mealie_client.models.meal_plan import MealPlan
 from mealie_client.exceptions import NotFoundError
 
 
@@ -121,7 +121,7 @@ class TestMealPlansManager:
 
 def create_test_meal_plan_data(**kwargs):
     """Create test meal plan data."""
-    today = datetime.utcnow().date()
+    today = datetime.now(UTC).date()
     defaults = {
         "id": str(uuid4()),
         "group_id": "test-group",
