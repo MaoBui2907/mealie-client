@@ -176,3 +176,11 @@ Thumbs.db
 *.temp
 .cache/
 .ruff_cache/
+
+# PyPI publishing
+.pypirc
+*.whl.sig
+twine.log
+
+# Build scripts temp files
+scripts/temp/

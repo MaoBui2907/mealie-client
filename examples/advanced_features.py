@@ -15,8 +15,8 @@ import os
 from datetime import date, timedelta
 from pathlib import Path
 
-from mealie_sdk import MealieClient
-from mealie_sdk.exceptions import MealieAPIError, AuthenticationError, NotFoundError
+from mealie_client import MealieClient
+from mealie_client.exceptions import MealieAPIError, AuthenticationError, NotFoundError
 
 
 async def advanced_recipe_operations(client: MealieClient):
@@ -26,15 +26,11 @@ async def advanced_recipe_operations(client: MealieClient):
     
     # Complex filtering example
     print("Searching with complex filters...")
-    complex_filter = (
-        '(tags.name CONTAINS "vegetarian" OR tags.name CONTAINS "vegan") '
-        'AND cook_time <= "PT45M" '
-        'AND created_at >= "2023-01-01"'
-    )
     
     filtered_recipes = await client.recipes.get_all(
-        query_filter=complex_filter,
-        order_by="created_at,cook_time",
+        search="vegetarian quick",
+        tags=["vegetarian", "quick"],
+        order_by="created_at",
         order_direction="desc",
         per_page=10
     )
@@ -79,12 +75,7 @@ async def shopping_list_management(client: MealieClient):
             {"note": "2 cups basmati rice", "checked": False},
             {"note": "Fresh vegetables for salad", "checked": False},
             {"note": "Olive oil - extra virgin", "checked": False}
-        ],
-        "extras": {
-            "store_preference": "Whole Foods",
-            "budget_limit": "150.00",
-            "priority": "high"
-        }
+        ]
     }
     
     shopping_list = await client.shopping_lists.create(shopping_list_data)
@@ -101,7 +92,7 @@ async def shopping_list_management(client: MealieClient):
         print(f"  ➕ Added item: {item_data['note']}")
     
     # Retrieve and update the shopping list
-    updated_list = await client.shopping_lists.get_by_id(shopping_list.id)
+    updated_list = await client.shopping_lists.get(shopping_list.id)
     print(f"📋 Shopping list now has {len(updated_list.list_items)} items")
     
     return shopping_list
@@ -127,11 +118,7 @@ async def meal_planning_workflow(client: MealieClient, recipes):
                 "date": plan_date.isoformat(),
                 "entry_type": meal_type,
                 "title": f"{meal_type.title()} for {plan_date.strftime('%A')}",
-                "recipe_id": recipe_id,
-                "extras": {
-                    "meal_prep_day": "Sunday",
-                    "dietary_notes": "Family friendly"
-                }
+                "recipe_id": recipe_id
             }
             
             try:
@@ -145,9 +132,9 @@ async def meal_planning_workflow(client: MealieClient, recipes):
     return created_plans
 
 
-async def user_group_management(client: MealieClient):
-    """Demonstrate user and group management (requires admin privileges)."""
-    print("\n👥 User & Group Management")
+async def user_management(client: MealieClient):
+    """Demonstrate user management (requires admin privileges)."""
+    print("\n👥 User Management")
     print("-" * 30)
     
     try:
@@ -155,26 +142,18 @@ async def user_group_management(client: MealieClient):
         users = await client.users.get_all()
         print(f"📊 Current users: {len(users)}")
         
-        # Get groups
+        # Note: Groups are read-only via API
         groups = await client.groups.get_all()
-        print(f"📊 Current groups: {len(groups)}")
+        print(f"📊 Current groups: {len(groups)} (read-only via API)")
         
-        # Create a new group
-        group_data = {
-            "name": "SDK Test Group",
-            "description": "A test group created via SDK"
-        }
-        
-        new_group = await client.groups.create(group_data)
-        print(f"✅ Created group: {new_group.name}")
-        
-        return new_group
+        print("Note: Groups must be created/updated/deleted via Mealie web interface")
+        return None
         
     except AuthenticationError:
-        print("❌ Admin privileges required for user/group management")
+        print("❌ Admin privileges required for user management")
         return None
     except MealieAPIError as e:
-        print(f"❌ Group management error: {e}")
+        print(f"❌ User management error: {e}")
         return None
 
 
@@ -185,7 +164,7 @@ async def error_handling_examples(client: MealieClient):
     
     # Example 1: Handle not found errors
     try:
-        non_existent_recipe = await client.recipes.get_by_slug("definitely-not-a-recipe")
+        non_existent_recipe = await client.recipes.get("definitely-not-a-recipe")
     except NotFoundError:
         print("✅ Properly handled NotFoundError for non-existent recipe")
     except MealieAPIError as e:
@@ -199,32 +178,23 @@ async def error_handling_examples(client: MealieClient):
             "email": "test@example.com",
             "password": "testpass"
         })
+        print("✅ User creation successful")
     except AuthenticationError:
         print("✅ Properly handled AuthenticationError for insufficient privileges")
     except MealieAPIError as e:
         print(f"❌ Unexpected API error: {e}")
-    
-    # Example 3: Handle validation errors
-    try:
-        # Invalid recipe data
-        await client.recipes.create({
-            "name": "",  # Empty name should cause validation error
-            "description": "Invalid recipe"
-        })
-    except MealieAPIError as e:
-        print(f"✅ Properly handled validation error: {e}")
 
 
-async def cleanup_test_data(client: MealieClient, created_recipes, shopping_list, meal_plans, group):
-    """Clean up test data created during the example."""
-    print("\n🧹 Cleaning Up Test Data")
+async def cleanup_test_data(client: MealieClient, created_recipes, shopping_list, meal_plans):
+    """Clean up test data created during the demo."""
+    print("\n🧹 Cleaning up test data...")
     print("-" * 30)
     
     # Delete created recipes
     for recipe in created_recipes:
         try:
             await client.recipes.delete(recipe.slug)
-            print(f"  🗑️  Deleted recipe: {recipe.name}")
+            print(f"  ✅ Deleted recipe: {recipe.name}")
         except Exception as e:
             print(f"  ❌ Failed to delete recipe {recipe.name}: {e}")
     
@@ -232,7 +202,7 @@ async def cleanup_test_data(client: MealieClient, created_recipes, shopping_list
     if shopping_list:
         try:
             await client.shopping_lists.delete(shopping_list.id)
-            print(f"  🗑️  Deleted shopping list: {shopping_list.name}")
+            print(f"  ✅ Deleted shopping list: {shopping_list.name}")
         except Exception as e:
             print(f"  ❌ Failed to delete shopping list: {e}")
     
@@ -240,71 +210,75 @@ async def cleanup_test_data(client: MealieClient, created_recipes, shopping_list
     for plan in meal_plans:
         try:
             await client.meal_plans.delete(plan.id)
-            print(f"  🗑️  Deleted meal plan for {plan.date}")
+            print(f"  ✅ Deleted meal plan: {plan.title}")
         except Exception as e:
             print(f"  ❌ Failed to delete meal plan: {e}")
     
-    # Delete group
-    if group:
-        try:
-            await client.groups.delete(group.id)
-            print(f"  🗑️  Deleted group: {group.name}")
-        except Exception as e:
-            print(f"  ❌ Failed to delete group: {e}")
+    # Note: Groups cannot be deleted via API - must be done manually via web interface
 
 
 async def main():
-    """Main advanced example function."""
-    print("🚀 Mealie SDK Advanced Features Example")
-    print("=" * 45)
+    """Main demo function."""
+    print("🚀 Mealie SDK Advanced Features Demo")
+    print("=" * 50)
     
-    # Initialize client
-    client = MealieClient(
+    async with MealieClient(
         base_url=os.getenv("MEALIE_BASE_URL", "https://your-mealie-instance.com"),
         api_token=os.getenv("MEALIE_API_TOKEN", "your-api-token")
-    )
-    
-    # Track created items for cleanup
-    created_recipes = []
-    shopping_list = None
-    meal_plans = []
-    group = None
-    
-    try:
-        # Advanced recipe operations
-        created_recipes = await advanced_recipe_operations(client)
+    ) as client:
         
-        # Shopping list management
-        shopping_list = await shopping_list_management(client)
-        
-        # Meal planning workflow
-        if created_recipes:
+        try:
+            # Run advanced recipe operations
+            created_recipes = await advanced_recipe_operations(client)
+            
+            # Shopping list management
+            shopping_list = await shopping_list_management(client)
+            
+            # Meal planning workflow
             meal_plans = await meal_planning_workflow(client, created_recipes)
-        
-        # User and group management (optional - requires admin)
-        group = await user_group_management(client)
-        
-        # Error handling examples
-        await error_handling_examples(client)
-        
-    except Exception as e:
-        print(f"❌ Unexpected error during example: {e}")
+            
+            # === Groups Management ===
+            print("\n--- Groups Management (Read-Only) ---")
+            
+            # Note: Groups cannot be created, updated, or deleted via API
+            # They must be managed through the Mealie web interface
+            
+            # Get all groups
+            print("Getting all groups...")
+            groups = await client.groups.get_all()
+            print(f"Found {len(groups)} groups")
+            
+            if groups:
+                # Get details of first group
+                group = groups[0]
+                print(f"Getting details for group: {group.name}")
+                detailed_group = await client.groups.get(group.id)
+                print(f"Group details - Name: {detailed_group.name}, Users: {detailed_group.get_user_count()}")
+            else:
+                print("No groups found. Groups must be created via web interface.")
+            
+            print("Note: Group create/update/delete operations must be done via Mealie web interface")
+            
+            # Error handling examples
+            await error_handling_examples(client)
+            
+            # Clean up test data
+            await cleanup_test_data(client, created_recipes, shopping_list, meal_plans)
+            
+        except Exception as e:
+            print(f"❌ Demo error: {e}")
+            print("Make sure your Mealie instance is running and API token is valid")
     
-    finally:
-        # Clean up test data
-        await cleanup_test_data(client, created_recipes, shopping_list, meal_plans, group)
-        
-        # Close client connection
-        await client.close()
-    
-    print("\n🎉 Advanced example completed!")
+    print("\n🎉 Advanced features demo completed!")
 
 
 if __name__ == "__main__":
-    print("To run this advanced example, set the following environment variables:")
+    # Set up environment variables for testing
+    print("To run this advanced demo, set the following environment variables:")
     print("  export MEALIE_BASE_URL='https://your-mealie-instance.com'")
     print("  export MEALIE_API_TOKEN='your-api-token'")
-    print("\nNote: Some features require admin privileges on your Mealie instance.")
+    print("Note: Some features require admin privileges")
     print()
     
+    # Run the demo
     asyncio.run(main()) 

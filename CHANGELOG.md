@@ -11,6 +11,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial project setup
 - Basic SDK structure
 - Comprehensive documentation
+- Unit, Food, and Household management endpoints
+
+## [0.1.1] - 2025-06-07
+
+### Added
+
+- GitHub Actions CI/CD pipeline
+- Full test suite setup
+
 
 ## [0.1.0] - 2025-01-07
 
@@ -18,23 +27,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial release of Mealie SDK
 - Async HTTP client using httpx
 - Pydantic models for type safety
-- Support for Recipe management (CRUD operations)
+- Support for Recipe management (Basic CRUD operations)
 - Support for Meal Plan management
-- Support for Shopping List management
 - Support for User and Group management
 - Authentication via API tokens
 - Advanced filtering and pagination support
 - Comprehensive error handling
 - Example scripts for basic and advanced usage
-- GitHub Actions CI/CD pipeline
-- Full test suite setup
 - Professional documentation
 - PDM project management setup
 
 ### Features
 - **Recipe Management**: Full CRUD operations for recipes
 - **Meal Planning**: Create and manage meal plans
-- **Shopping Lists**: Manage shopping lists and items
 - **User Management**: Handle users and groups (admin privileges required)
 - **Authentication**: Secure token-based authentication
 - **Filtering**: Advanced query capabilities with pagination
@@ -53,5 +58,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - GitHub Actions for CI/CD
 - Pre-commit hooks for code quality
 
-[unreleased]: https://github.com/yourusername/mealie-sdk/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/yourusername/mealie-sdk/releases/tag/v0.1.0 
+[unreleased]: https://github.com/yourusername/mealie-client/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/yourusername/mealie-client/releases/tag/v0.1.0 

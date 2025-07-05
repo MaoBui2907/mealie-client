@@ -1,0 +1,68 @@
+name: Release on Tag
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  build-test-publish:
+    name: Build, Test & Publish PyPI (Tag)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Extract version from tag
+        id: extract_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+
+      - name: Show extracted version
+        run: echo "Version from tag is $VERSION"
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install PDM
+        uses: pdm-project/setup-pdm@v3
+
+      - name: Install dependencies
+        run: pdm install -G dev,publish
+
+      - name: Sync version based on tag
+        run: |
+          python scripts/bump_version.py "$VERSION" --module-path src/mealie_client/__init__.py
+
+      - name: Run tests
+        run: pdm run pytest -v --maxfail=5
+        env:
+          E2E_MEALIE_API_TOKEN: ${{ secrets.E2E_MEALIE_API_TOKEN }}
+          E2E_MEALIE_BASE_URL: ${{ secrets.E2E_MEALIE_BASE_URL }}
+          E2E_MEALIE_USERNAME: ${{ secrets.E2E_MEALIE_USERNAME }}
+          E2E_MEALIE_PASSWORD: ${{ secrets.E2E_MEALIE_PASSWORD }}
+          E2E_CLEANUP_DATA: true
+          E2E_TIMEOUT: 30
+          E2E_MAX_RETRIES: 3
+
+      - name: Build package
+        run: pdm build
+
+      - name: Verify build
+        run: |
+          ls -la dist/
+          pip install dist/*.whl
+          python -c "import mealie_client, os; print(f'Package version in build: {mealie_client.__version__}')"
+
+      - name: Upload to PyPI Test first
+        run: pdm run twine upload --repository testpypi dist/* --skip-existing --verbose
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_TEST_TOKEN }}
+
+      - name: Publish to Production PyPI
+        run: pdm run twine upload dist/* --skip-existing --verbose
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }} 
