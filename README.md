@@ -29,9 +29,9 @@ This SDK currently covers the following Mealie API endpoints:
 ✅ **Groups** - Basic group operations  
 ✅ **Meal Plans** - Meal planning with date filtering  
 ✅ **Shopping Lists** - Shopping lists and item management  
-✅ **Units** - Unit management
-✅ **Foods** - Food management
-✅ **Households** - Household management
+✅ **Units** - Unit management 
+✅ **Foods** - Food management 
+✅ **Households** - Household management 
 
 🔄 **Planned for Future Releases**:
 - Categories, Tags, and Tools endpoints
@@ -432,27 +432,26 @@ The SDK includes Pydantic models for all supported data structures:
 - [x] Users management endpoint
 - [x] Groups management endpoint
 - [x] Meal plans management endpoint
-- [x] Shopping lists management endpoint
 - [x] Units management endpoint
 - [x] Foods management endpoint
 - [x] Households management endpoint
+- [x] Tags management endpoint
 
-### Version 0.2.0 (Planned)
-- [ ] Categories, Tags, and Tools endpoints
+### Version 1.0.0 (Planned)
+- [ ] Shopping lists management endpoint
+- [ ] Categories, and Tools endpoints
 - [ ] Recipe search improvements
 - [ ] Better error messages
 
-### Version 0.3.0 (Planned)
+### Version 1.1.0 (Planned)
 - [ ] Recipe Extras support
 - [ ] Webhooks management
 - [ ] Timeline Events
 - [ ] Advanced filtering options
 
-### Version 0.4.0 (Future)
-- [ ] Backup/Restore functionality
+### Version 2.0.0 (Future)
 - [ ] Bulk operations
 - [ ] Enhanced meal plan features
-- [ ] Performance optimizations
 
 ## 🤝 Contributing
 
@@ -480,7 +479,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-- **Issues**: [GitHub Issues](https://github.com/yourusername/mealie-client/issues)
+- **Issues**: [GitHub Issues](https://github.com/MaoBui2907/mealie-client/issues)
 
 ---
 
